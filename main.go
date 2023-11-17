@@ -27,7 +27,14 @@ func main() {
     // Define port
     port := ":8080"
     
+    // React build directory
+    buildDir := "./build"
+
+    // Create a file server to serve static files
+    fs := http.FileServer(http.Dir(buildDir))
+
     // Handle calls for various routes
+    http.Handle("/", http.StripPrefix("/", fs))
     http.HandleFunc("/api/", handleSearch)
 
     // Start an HTTP server on the given port
@@ -35,6 +42,18 @@ func main() {
 }
 
 func handleSearch (w http.ResponseWriter, r *http.Request) {
+    // Set CORS headers
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "GET")
+    w.Header().Set("Access-Control-Allow-Headers", "Custom-Header")
+
+    // Respond to preflight OPTIONS request
+    if r.Method == "OPTIONS" {
+        // Respond with a 200 OK status
+        w.WriteHeader(http.StatusOK)
+        return
+    }
+
     // Check for query parameters
     queryString := r.URL.Query().Get("query")
     
